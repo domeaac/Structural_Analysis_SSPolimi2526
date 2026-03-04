@@ -1,0 +1,40 @@
+function [N] = ShapeFunctions(nodes, nodes_order, coordinates)
+
+n = nodes*nodes_order;
+
+syms x
+syms nodal_bcs [n 1]  % Rappresenta lo spostamento ai nodi (u1, u2, ...)
+
+base = RitzBase(n, 'polynomial');
+syms a [1 n]
+u_x = a*base;
+
+eqs = zeros(n, 1, 'sym');
+
+for i = 1:n
+    count = 0
+   while count < nodes_order
+
+       +count = count
+end
+
+eqs = zeros(n, 1, 'sym');
+for i = 1:n
+    if nodes_order == 1
+        eqs(i) = subs(u_x, x, coordinates(i)) == nodal_bcs(i);
+    end
+    if nodetypes(i) == 2
+        eqs(i) = subs(diff(u_x,x,1), x, coordinates(ceil(i/n))) == nodal_bcs(i);
+    end
+end
+
+[M, b] = equationsToMatrix(eqs, a);
+a_solved = M \ b;
+
+assume(nodal_bcs, "real")
+assume(coordinates, "real")
+u_final = subs(u_x, a, a_solved');
+[N, ~] = equationsToMatrix(u_final, nodal_bcs);
+N = simplify(N);
+
+end
